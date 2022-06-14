@@ -1,0 +1,14 @@
+---
+passwd:
+  users:
+    - name: core
+      ssh_authorized_keys:
+        - ssh-rsa ...
+storage:
+  files:
+    - path: /etc/hostname
+      filesystem: root
+      contents:
+        remote:
+          url: http://169.254.169.254/hetzner/v1/metadata/hostname
+      mode: 0644

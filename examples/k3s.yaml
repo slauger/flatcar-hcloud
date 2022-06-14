@@ -1,0 +1,45 @@
+---
+passwd:
+  users:
+    - name: core
+      ssh_authorized_keys:
+        - ssh-rsa ...
+storage:
+  files:
+    - path: /opt/k3s-install.sh
+      filesystem: root
+      contents:
+        remote:
+          url: https://get.k3s.io
+      mode: 0755
+    - path: /etc/hostname
+      filesystem: root
+      contents:
+        remote:
+          url: http://169.254.169.254/hetzner/v1/metadata/hostname
+      mode: 0644
+systemd:
+  units:
+    - name: containerd.service
+      enabled: false
+    - name: docker.service
+      enabled: false
+    - name: k3s-install.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Run K3s script
+        Wants = network-online.target
+        After = network.target network-online.target
+        ConditionPathExists=/opt/k3s-install.sh
+        ConditionPathExists=!/opt/bin/k3s
+        [Service]
+        Type=forking
+        TimeoutStartSec=180
+        RemainAfterExit=yes
+        KillMode=process
+        #Environment=\"K3S_TOKEN=secret_edgecluster_token"
+        #Environment=\"INSTALL_K3S_EXEC=--cluster-init"
+        ExecStart=/usr/bin/sh -c "/opt/k3s-install.sh"
+        [Install]
+        WantedBy=multi-user.target
