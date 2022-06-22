@@ -1,6 +1,6 @@
 locals {
   version       = var.version != "" ? var.version : local.flatcar_version_info.FLATCAR_VERSION_ID
-  download_url  = "https://stable.release.flatcar-linux.net/amd64-usr/${var.version != "" ? var.version : "current"}/flatcar_production_image.bin.bz2"
+  download_url  = "https://stable.release.flatcar-linux.net/amd64-usr/${local.version}/flatcar_production_image.bin.bz2"
   snapshot_name = "${var.snapshot_prefix}${local.version}"
 }
 
