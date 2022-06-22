@@ -11,7 +11,7 @@ Build Flatcar Container Linux Images on Hetzner Cloud with Hashicorp Packer.
 This builds an snapshot image in the hcloud for Flatcar Container Linux and injects the Hetzner Cloud Datasource (`http://169.254.169.254/hetzner/v1/userdata`).
 
 ```
-packer build flatcar.json
+packer build flatcar.pkr.hcl
 ```
 
 ## Example instance
