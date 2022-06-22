@@ -1,41 +1,21 @@
-variable "grub_config" {
-  type    = string
-  default = "grub.cfg"
+locals {
+  version       = var.version != "" ? var.version : local.flatcar_version_info.FLATCAR_VERSION_ID
+  download_url  = "https://stable.release.flatcar-linux.net/amd64-usr/${var.version != "" ? var.version : "current"}/flatcar_production_image.bin.bz2"
+  snapshot_name = "${var.snapshot_prefix}${local.version}"
 }
-
-variable "image_type" {
-  type    = string
-  default = "generic"
-}
-
-variable "location" {
-  type    = string
-  default = "nbg1"
-}
-
-variable "server_type" {
-  type    = string
-  default = "cx11"
-}
-
-variable "snapshot_prefix" {
-  type    = string
-  default = "flatcar-hcloud"
-}
-
-locals { timestamp = regex_replace(timestamp(), "[- TZ:]", "") }
 
 source "hcloud" "builder" {
-  image           = "ubuntu-22.04"
-  location        = "${var.location}"
-  rescue          = "linux64"
-  server_type     = "${var.server_type}"
+  image         = "ubuntu-22.04"
+  location      = "${var.location}"
+  rescue        = "linux64"
+  server_type   = "${var.server_type}"
+  snapshot_name = "${local.snapshot_name}"
+  ssh_username  = "root"
+
   snapshot_labels = {
     image_type = "${var.image_type}"
     os         = "flatcar"
   }
-  snapshot_name = "${var.snapshot_prefix}-${local.timestamp}"
-  ssh_username  = "root"
 }
 
 build {
@@ -43,7 +23,7 @@ build {
 
   provisioner "shell" {
     inline = [
-      "curl -fsSL https://stable.release.flatcar-linux.net/amd64-usr/current/flatcar_production_image.bin.bz2 | bzcat | dd if=/dev/stdin of=/dev/sda bs=64k",
+      "curl -fsSL ${local.download_url} | bzcat | dd if=/dev/stdin of=/dev/sda bs=64k",
       "mount /dev/sda6 /mnt"
     ]
   }
