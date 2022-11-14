@@ -6,12 +6,6 @@ passwd:
         - ssh-rsa ...
 storage:
   files:
-    - path: /opt/k3s-install.sh
-      filesystem: root
-      contents:
-        remote:
-          url: https://get.k3s.io
-      mode: 0755
     - path: /etc/hostname
       filesystem: root
       contents:

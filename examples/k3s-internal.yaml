@@ -1,0 +1,81 @@
+passwd:
+  users:
+    - name: core
+      ssh_authorized_keys:
+        - ssh-rsa AAAAB........ Some_User
+storage:
+  files:
+    - path: /etc/hostname
+      filesystem: root
+      contents:
+        remote:
+          url: http://169.254.169.254/hetzner/v1/metadata/hostname
+      mode: 0644
+    - path: /etc/rancher/k3s/config.yaml
+      filesystem: root
+      mode: 0644
+      contents:
+        inline: |
+          write-kubeconfig-mode: "0644"
+
+networkd:
+  units:
+    - name: 10-default-route.network
+      contents: |
+        [Match]
+        Name=eth0
+
+        [Network]
+        DHCP=yes
+        DNS=1.1.1.1
+        DNS=1.0.0.1
+
+        [Route]
+        Gateway=192.168.240.1
+        Destination=0.0.0.0/0
+
+systemd:
+  units:
+    - name: k3s-install.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Run initial K3s installation
+        Wants=network-online.target
+        After=network.target network-online.target
+        ConditionFirstBoot=yes
+
+        [Service]
+        Type=oneshot
+        TimeoutStartSec=180
+        #Environment="K3S_TOKEN=secret_edgecluster_token"
+        Environment="INSTALL_K3S_CHANNEL=stable"
+        #Environment="INSTALL_K3S_EXEC=--cluster-init"
+        ExecStart=/bin/sh -c "curl -sfL https://get.k3s.io | sh -"
+
+        [Install]
+        WantedBy=first-boot-complete.target
+    - name: k3s-updater.service
+      contents: |
+        [Unit]
+        Description=Run K3s Update
+        Wants=network-online.target
+        After=network.target network-online.target
+
+        [Service]
+        Type=oneshot
+        TimeoutStartSec=180
+        Environment="INSTALL_K3S_CHANNEL=stable"
+        ExecStart=/bin/sh -c "curl -sfL https://get.k3s.io | sh -"
+    - name: k3s-updater.timer
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Run k3s-updater daily
+
+        [Timer]
+        OnCalendar=daily
+        Persistent=true
+        
+        [Install]
+        WantedBy=timers.target
