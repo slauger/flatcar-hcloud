@@ -1,14 +1,14 @@
 locals {
   version       = var.version != "" ? var.version : local.flatcar_version_info.FLATCAR_VERSION_ID
-  download_url  = "https://stable.release.flatcar-linux.net/amd64-usr/${local.version}/flatcar_production_image.bin.bz2"
-  snapshot_name = "${var.snapshot_prefix}${local.version}"
+  download_url  = "https://stable.release.flatcar-linux.net/${var.arch}-usr/${local.version}/flatcar_production_image.bin.bz2"
+  snapshot_name = "${var.snapshot_prefix}${local.version}-${var.arch}"
 }
 
 source "hcloud" "builder" {
   image         = "ubuntu-22.04"
   location      = "${var.location}"
   rescue        = "linux64"
-  server_type   = "${var.server_type}"
+  server_type   = "${local.server_type}"
   snapshot_name = "${local.snapshot_name}"
   ssh_username  = "root"
 
