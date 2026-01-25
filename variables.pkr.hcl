@@ -4,12 +4,6 @@ variable "grub_config" {
   default     = "grub.cfg"
 }
 
-variable "image_type" {
-  type        = string
-  description = "content of image_type label"
-  default     = "generic"
-}
-
 variable "location" {
   type        = string
   description = "hetzner cloud location where to provision the builder vm"

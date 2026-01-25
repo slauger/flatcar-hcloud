@@ -13,8 +13,9 @@ source "hcloud" "builder" {
   ssh_username  = "root"
 
   snapshot_labels = {
-    image_type = "${var.image_type}"
-    os         = "flatcar"
+    os      = "flatcar"
+    arch    = "${var.arch}"
+    version = "${local.version}"
   }
 }
 
