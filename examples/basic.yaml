@@ -1,14 +1,18 @@
 ---
+# Butane Config for Flatcar Container Linux
+# Minimal example - for use with Packer or manual deployments
+variant: flatcar
+version: 1.0.0
+
 passwd:
   users:
     - name: core
       ssh_authorized_keys:
-        - ssh-rsa ...
+        - ssh-rsa AAAAB3... user@example.com  # Replace with your SSH public key
+
 storage:
   files:
     - path: /etc/hostname
-      filesystem: root
-      contents:
-        remote:
-          url: http://169.254.169.254/hetzner/v1/metadata/hostname
       mode: 0644
+      contents:
+        source: http://169.254.169.254/hetzner/v1/metadata/hostname

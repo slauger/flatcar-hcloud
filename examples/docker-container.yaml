@@ -1,0 +1,121 @@
+---
+# Butane Config for Flatcar Container Linux
+# Example: Running a Docker container as systemd service
+variant: flatcar
+version: 1.0.0
+
+passwd:
+  users:
+    - name: core
+      ssh_authorized_keys:
+        - ssh-rsa AAAAB3... user@example.com  # Replace with your SSH public key
+
+storage:
+  files:
+    - path: /etc/hostname
+      mode: 0644
+      contents:
+        source: http://169.254.169.254/hetzner/v1/metadata/hostname
+
+    # Optional: Docker registry credentials for private images
+    # - path: /home/core/.docker/config.json
+    #   mode: 0600
+    #   user:
+    #     name: core
+    #   contents:
+    #     inline: |
+    #       {
+    #         "auths": {
+    #           "registry.example.com": {
+    #             "auth": "base64-encoded-username:password"
+    #           }
+    #         }
+    #       }
+
+systemd:
+  units:
+    # Enable Docker
+    - name: docker.service
+      enabled: true
+
+    # Example: Nginx web server
+    - name: nginx-container.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Nginx Container
+        After=docker.service
+        Requires=docker.service
+
+        [Service]
+        TimeoutStartSec=0
+        Restart=always
+        ExecStartPre=-/usr/bin/docker stop nginx
+        ExecStartPre=-/usr/bin/docker rm nginx
+        ExecStartPre=/usr/bin/docker pull nginx:alpine
+        ExecStart=/usr/bin/docker run --name nginx \
+          --rm \
+          -p 80:80 \
+          -p 443:443 \
+          nginx:alpine
+        ExecStop=/usr/bin/docker stop nginx
+
+        [Install]
+        WantedBy=multi-user.target
+
+    # Example: PostgreSQL database
+    - name: postgres-container.service
+      enabled: false  # Change to true to enable
+      contents: |
+        [Unit]
+        Description=PostgreSQL Container
+        After=docker.service
+        Requires=docker.service
+
+        [Service]
+        TimeoutStartSec=0
+        Restart=always
+        ExecStartPre=-/usr/bin/docker stop postgres
+        ExecStartPre=-/usr/bin/docker rm postgres
+        ExecStartPre=/usr/bin/docker pull postgres:16-alpine
+        ExecStart=/usr/bin/docker run --name postgres \
+          --rm \
+          -p 5432:5432 \
+          -e POSTGRES_PASSWORD=changeme \
+          -v /var/lib/postgresql/data:/var/lib/postgresql/data \
+          postgres:16-alpine
+        ExecStop=/usr/bin/docker stop postgres
+
+        [Install]
+        WantedBy=multi-user.target
+
+    # Example: Traefik reverse proxy
+    - name: traefik-container.service
+      enabled: false  # Change to true to enable
+      contents: |
+        [Unit]
+        Description=Traefik Reverse Proxy
+        After=docker.service
+        Requires=docker.service
+
+        [Service]
+        TimeoutStartSec=0
+        Restart=always
+        ExecStartPre=-/usr/bin/docker stop traefik
+        ExecStartPre=-/usr/bin/docker rm traefik
+        ExecStartPre=/usr/bin/docker pull traefik:latest
+        ExecStart=/usr/bin/docker run --name traefik \
+          --rm \
+          -p 80:80 \
+          -p 443:443 \
+          -p 8080:8080 \
+          -v /var/run/docker.sock:/var/run/docker.sock \
+          traefik:latest \
+          --api.insecure=true \
+          --providers.docker=true \
+          --entrypoints.web.address=:80 \
+          --entrypoints.websecure.address=:443
+        ExecStop=/usr/bin/docker stop traefik
+
+        [Install]
+        WantedBy=multi-user.target

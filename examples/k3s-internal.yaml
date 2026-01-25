@@ -1,26 +1,39 @@
+---
+# Butane Config for Flatcar Container Linux with K3s
+# K3s server in private network with custom routing
+variant: flatcar
+version: 1.0.0
+
 passwd:
   users:
     - name: core
       ssh_authorized_keys:
-        - ssh-rsa AAAAB........ Some_User
+        - ssh-rsa AAAAB3... user@example.com  # Replace with your SSH public key
+
 storage:
   files:
     - path: /etc/hostname
-      filesystem: root
-      contents:
-        remote:
-          url: http://169.254.169.254/hetzner/v1/metadata/hostname
       mode: 0644
+      contents:
+        source: http://169.254.169.254/hetzner/v1/metadata/hostname
+
     - path: /etc/rancher/k3s/config.yaml
-      filesystem: root
       mode: 0644
       contents:
         inline: |
           write-kubeconfig-mode: "0644"
+          # Bind to private network interface
+          bind-address: 192.168.240.2
+          advertise-address: 192.168.240.2
+          # Optional: Disable built-in components
+          # disable:
+          #   - traefik
+          #   - servicelb
 
+# Custom network configuration for private network
 networkd:
   units:
-    - name: 10-default-route.network
+    - name: 10-private-network.network
       contents: |
         [Match]
         Name=eth0
@@ -36,6 +49,13 @@ networkd:
 
 systemd:
   units:
+    # Disable Docker and Containerd (K3s brings its own)
+    - name: containerd.service
+      enabled: false
+    - name: docker.service
+      enabled: false
+
+    # Install K3s on first boot
     - name: k3s-install.service
       enabled: true
       contents: |
@@ -47,14 +67,18 @@ systemd:
 
         [Service]
         Type=oneshot
-        TimeoutStartSec=180
-        #Environment="K3S_TOKEN=secret_edgecluster_token"
+        TimeoutStartSec=300
         Environment="INSTALL_K3S_CHANNEL=stable"
-        #Environment="INSTALL_K3S_EXEC=--cluster-init"
+        Environment="INSTALL_K3S_EXEC=server"
+        # For cluster mode in private network:
+        # Environment="K3S_TOKEN=your-secret-token"
+        # Environment="INSTALL_K3S_EXEC=server --cluster-init --flannel-iface=eth0"
         ExecStart=/bin/sh -c "curl -sfL https://get.k3s.io | sh -"
 
         [Install]
         WantedBy=first-boot-complete.target
+
+    # Daily K3s updates
     - name: k3s-updater.service
       contents: |
         [Unit]
@@ -64,9 +88,10 @@ systemd:
 
         [Service]
         Type=oneshot
-        TimeoutStartSec=180
+        TimeoutStartSec=300
         Environment="INSTALL_K3S_CHANNEL=stable"
         ExecStart=/bin/sh -c "curl -sfL https://get.k3s.io | sh -"
+
     - name: k3s-updater.timer
       enabled: true
       contents: |
@@ -76,6 +101,6 @@ systemd:
         [Timer]
         OnCalendar=daily
         Persistent=true
-        
+
         [Install]
         WantedBy=timers.target

@@ -102,14 +102,19 @@ packer build .
 packer build -var arch=arm64 .
 ```
 
-## Container Linux Configs
+## Butane Configuration Examples
 
-Example Ignition configs are provided in `examples/`:
-- `basic.yaml` - Basic Flatcar setup
-- `k3s.yaml` - K3s server installation
-- `k3s-internal.yaml` - K3s with private network
+Example Butane configs are provided in `examples/`:
 
-These can be used as templates for your own configurations.
+| Example | Description |
+|---------|-------------|
+| [basic.yaml](examples/basic.yaml) | Minimal Flatcar setup |
+| [docker-container.yaml](examples/docker-container.yaml) | Docker containers as systemd services |
+| [docker-compose.yaml](examples/docker-compose.yaml) | Docker Compose stack with multiple services |
+| [k3s.yaml](examples/k3s.yaml) | Single K3s server with automatic installation |
+| [k3s-internal.yaml](examples/k3s-internal.yaml) | K3s in private network with custom routing |
+
+See the [examples README](examples/README.md) for detailed documentation and usage instructions.
 
 ## Deployment with Terraform
 

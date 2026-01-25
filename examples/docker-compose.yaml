@@ -1,0 +1,126 @@
+---
+# Butane Config for Flatcar Container Linux
+# Example: Running Docker Compose stack as systemd service
+variant: flatcar
+version: 1.0.0
+
+passwd:
+  users:
+    - name: core
+      ssh_authorized_keys:
+        - ssh-rsa AAAAB3... user@example.com  # Replace with your SSH public key
+
+storage:
+  files:
+    - path: /etc/hostname
+      mode: 0644
+      contents:
+        source: http://169.254.169.254/hetzner/v1/metadata/hostname
+
+    # Docker Compose file
+    - path: /opt/docker-compose.yml
+      mode: 0644
+      contents:
+        inline: |
+          version: '3.8'
+
+          services:
+            # Nginx web server
+            web:
+              image: nginx:alpine
+              ports:
+                - "80:80"
+                - "443:443"
+              volumes:
+                - ./html:/usr/share/nginx/html:ro
+              restart: always
+
+            # Redis cache
+            redis:
+              image: redis:alpine
+              ports:
+                - "6379:6379"
+              restart: always
+
+            # PostgreSQL database
+            db:
+              image: postgres:16-alpine
+              environment:
+                POSTGRES_PASSWORD: changeme
+                POSTGRES_USER: myapp
+                POSTGRES_DB: myapp
+              volumes:
+                - db-data:/var/lib/postgresql/data
+              restart: always
+
+          volumes:
+            db-data:
+
+    # Example application HTML
+    - path: /opt/html/index.html
+      mode: 0644
+      contents:
+        inline: |
+          <!DOCTYPE html>
+          <html>
+          <head>
+              <title>Flatcar on Hetzner Cloud</title>
+          </head>
+          <body>
+              <h1>Hello from Flatcar Container Linux!</h1>
+              <p>Running on Hetzner Cloud with Docker Compose</p>
+          </body>
+          </html>
+
+systemd:
+  units:
+    # Enable Docker
+    - name: docker.service
+      enabled: true
+
+    # Docker Compose service
+    - name: docker-compose-app.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Docker Compose Application
+        After=docker.service
+        Requires=docker.service
+
+        [Service]
+        Type=oneshot
+        RemainAfterExit=yes
+        WorkingDirectory=/opt
+        ExecStartPre=/usr/bin/docker-compose -f /opt/docker-compose.yml pull
+        ExecStart=/usr/bin/docker-compose -f /opt/docker-compose.yml up -d
+        ExecStop=/usr/bin/docker-compose -f /opt/docker-compose.yml down
+
+        [Install]
+        WantedBy=multi-user.target
+
+    # Docker Compose updater (pull and restart daily)
+    - name: docker-compose-updater.service
+      contents: |
+        [Unit]
+        Description=Update Docker Compose Stack
+        After=docker.service
+        Requires=docker.service
+
+        [Service]
+        Type=oneshot
+        WorkingDirectory=/opt
+        ExecStart=/usr/bin/docker-compose -f /opt/docker-compose.yml pull
+        ExecStart=/usr/bin/docker-compose -f /opt/docker-compose.yml up -d
+
+    - name: docker-compose-updater.timer
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Update Docker Compose Stack daily
+
+        [Timer]
+        OnCalendar=daily
+        Persistent=true
+
+        [Install]
+        WantedBy=timers.target
