@@ -26,6 +26,9 @@ crash.log
 **/.terraformrc
 **/terraform.rc
 
+# User environments (use examples/ as template)
+terraform/environments/
+
 # Kubeconfig files
 kubeconfig.yaml
 kubeconfig*.yaml
