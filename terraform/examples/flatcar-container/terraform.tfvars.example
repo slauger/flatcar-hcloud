@@ -1,0 +1,38 @@
+# Example configuration for single server deployment
+# Copy this file to terraform.tfvars and adjust to your needs
+
+name       = "web01"
+dns_domain = "example.com"
+
+server_type = "cx23"
+location    = "nbg1"
+arch        = "amd64"
+
+# SSH keys from Hetzner Cloud (for server creation)
+ssh_keys = ["your-ssh-key-name"]
+
+# SSH key selector to filter which public keys to fetch from Hetzner Cloud
+# Leave empty to use all SSH keys, or use labels like "environment=production"
+ssh_key_selector = ""
+
+# Firewall Configuration
+firewall_enabled       = true
+firewall_allow_ssh     = true
+firewall_allowed_ports = [80, 443]
+
+# For better security, restrict SSH to your IP:
+# firewall_ssh_sources = ["YOUR_IP/32"]
+
+# Optional: Enable volume
+# volume_enabled = true
+# volume_size    = 50
+
+# Optional: Enable Cloudflare DNS
+# cloudflare_enabled = true
+# cloudflare_domain  = "example.com"
+
+# Labels
+labels = {
+  environment = "production"
+  purpose     = "webserver"
+}

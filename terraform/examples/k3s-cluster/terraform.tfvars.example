@@ -1,0 +1,50 @@
+# Example configuration for K3s cluster deployment
+# Copy this file to terraform.tfvars and adjust to your needs
+
+name         = "k3s-server"
+dns_domain   = "example.com"
+cluster_name = "production"
+
+# Cluster Size
+server_count = 3  # 3 for HA, 1 for single node
+
+server_type = "cx32"
+location    = "nbg1"
+arch        = "amd64"
+
+# SSH keys from Hetzner Cloud
+ssh_keys = ["your-ssh-key-name"]
+
+# SSH public keys for Ignition config
+ssh_public_keys = [
+  "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQ... user@example.com"
+]
+
+# K3s Configuration
+k3s_config = "cluster-init: true"
+
+# Firewall Configuration
+firewall_enabled       = true
+firewall_allow_ssh     = true
+firewall_allowed_ports = [80, 443]  # HTTP/HTTPS for ingress
+
+# For better security, restrict SSH and K3s API to your IP:
+# firewall_ssh_sources = ["YOUR_IP/32"]
+# firewall_k3s_api_sources = ["YOUR_IP/32"]
+
+# Load Balancer Configuration
+load_balancer_enabled        = true
+load_balancer_type           = "lb11"
+load_balancer_services       = ["http", "https"]
+load_balancer_expose_k3s_api = true
+load_balancer_dns_name       = "k3s"  # Will be k3s.example.com
+
+# Cloudflare DNS (optional)
+# cloudflare_enabled = true
+# cloudflare_domain  = "example.com"
+
+# Labels
+labels = {
+  environment = "production"
+  cluster     = "main"
+}

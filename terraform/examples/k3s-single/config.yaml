@@ -1,0 +1,79 @@
+---
+# Butane Config for Flatcar Container Linux with K3s
+# Single K3s server - SSH keys are fetched from Hetzner Cloud
+variant: flatcar
+version: 1.0.0
+
+passwd:
+  users:
+    - name: core
+      ssh_authorized_keys:
+%{ for key in ssh_public_keys ~}
+        - ${key}
+%{ endfor ~}
+
+storage:
+  files:
+    - path: /etc/hostname
+      mode: 0644
+      contents:
+        source: http://169.254.169.254/hetzner/v1/metadata/hostname
+
+    - path: /etc/rancher/k3s/config.yaml
+      mode: 0644
+      contents:
+        inline: |
+          write-kubeconfig-mode: "0644"
+
+systemd:
+  units:
+    # Disable Docker and Containerd (K3s brings its own)
+    - name: containerd.service
+      enabled: false
+    - name: docker.service
+      enabled: false
+
+    - name: k3s-install.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Run initial K3s installation
+        Wants=network-online.target
+        After=network.target network-online.target
+        ConditionFirstBoot=yes
+
+        [Service]
+        Type=oneshot
+        TimeoutStartSec=300
+        Environment="INSTALL_K3S_CHANNEL=stable"
+        Environment="INSTALL_K3S_EXEC=server"
+        ExecStart=/bin/sh -c "curl -sfL https://get.k3s.io | sh -"
+
+        [Install]
+        WantedBy=first-boot-complete.target
+
+    - name: k3s-updater.service
+      contents: |
+        [Unit]
+        Description=Run K3s Update
+        Wants=network-online.target
+        After=network.target network-online.target
+
+        [Service]
+        Type=oneshot
+        TimeoutStartSec=300
+        Environment="INSTALL_K3S_CHANNEL=stable"
+        ExecStart=/bin/sh -c "curl -sfL https://get.k3s.io | sh -"
+
+    - name: k3s-updater.timer
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Run k3s-updater daily
+
+        [Timer]
+        OnCalendar=daily
+        Persistent=true
+
+        [Install]
+        WantedBy=timers.target

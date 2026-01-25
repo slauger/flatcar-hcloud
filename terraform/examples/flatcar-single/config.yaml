@@ -1,0 +1,26 @@
+---
+# Butane Config for Flatcar Container Linux
+# Minimal example - SSH keys are fetched from Hetzner metadata API
+variant: flatcar
+version: 1.0.0
+
+passwd:
+  users:
+    - name: core
+      ssh_authorized_keys:
+%{ for key in ssh_public_keys ~}
+        - ${key}
+%{ endfor ~}
+
+storage:
+  files:
+    - path: /etc/hostname
+      mode: 0644
+      contents:
+        source: http://169.254.169.254/hetzner/v1/metadata/hostname
+
+# Uncomment if you need Docker
+# systemd:
+#   units:
+#     - name: docker.service
+#       enabled: true

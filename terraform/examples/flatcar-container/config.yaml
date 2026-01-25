@@ -1,0 +1,96 @@
+---
+# Butane Config for Flatcar Container Linux
+# Example: Running a container with Docker
+variant: flatcar
+version: 1.0.0
+
+passwd:
+  users:
+    - name: core
+      ssh_authorized_keys:
+%{ for key in ssh_public_keys ~}
+        - ${key}
+%{ endfor ~}
+
+storage:
+  files:
+    - path: /etc/hostname
+      mode: 0644
+      contents:
+        source: http://169.254.169.254/hetzner/v1/metadata/hostname
+
+    # Optional: Docker registry credentials
+    # Uncomment and configure if using private images
+    # - path: /home/core/.docker/config.json
+    #   mode: 0600
+    #   user:
+    #     name: core
+    #   contents:
+    #     inline: |
+    #       {
+    #         "auths": {
+    #           "registry.example.com": {
+    #             "auth": "base64-encoded-username:password"
+    #           },
+    #           "ghcr.io": {
+    #             "auth": "base64-encoded-github-token"
+    #           }
+    #         }
+    #       }
+
+systemd:
+  units:
+    # Enable Docker
+    - name: docker.service
+      enabled: true
+
+    # Example: Run nginx container (public image)
+    - name: nginx-container.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Nginx Container
+        After=docker.service
+        Requires=docker.service
+
+        [Service]
+        TimeoutStartSec=0
+        Restart=always
+        ExecStartPre=-/usr/bin/docker stop nginx
+        ExecStartPre=-/usr/bin/docker rm nginx
+        ExecStartPre=/usr/bin/docker pull nginx:alpine
+        ExecStart=/usr/bin/docker run --name nginx \
+          --rm \
+          -p 80:80 \
+          -p 443:443 \
+          nginx:alpine
+        ExecStop=/usr/bin/docker stop nginx
+
+        [Install]
+        WantedBy=multi-user.target
+
+    # Example: Run container from private registry
+    # Uncomment if using private images
+    # - name: my-private-app.service
+    #   enabled: true
+    #   contents: |
+    #     [Unit]
+    #     Description=My Private Application
+    #     After=docker.service
+    #     Requires=docker.service
+    #
+    #     [Service]
+    #     User=core
+    #     TimeoutStartSec=0
+    #     Restart=always
+    #     ExecStartPre=-/usr/bin/docker stop my-app
+    #     ExecStartPre=-/usr/bin/docker rm my-app
+    #     ExecStartPre=/usr/bin/docker pull registry.example.com/my-app:latest
+    #     ExecStart=/usr/bin/docker run --name my-app \
+    #       --rm \
+    #       -p 8080:8080 \
+    #       registry.example.com/my-app:latest
+    #     ExecStop=/usr/bin/docker stop my-app
+    #
+    #     [Install]
+    #     WantedBy=multi-user.target
