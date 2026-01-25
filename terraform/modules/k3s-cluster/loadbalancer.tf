@@ -101,3 +101,24 @@ resource "cloudflare_dns_record" "lb_aaaa" {
   ttl     = 1
   proxied = false
 }
+
+# Additional DNS records for Load Balancer (e.g., *.apps.example.com)
+resource "cloudflare_dns_record" "lb_additional_a" {
+  for_each = var.load_balancer_enabled && var.cloudflare_enabled ? toset(var.cloudflare_additional_records) : []
+  zone_id  = data.cloudflare_zone.lb_zone[0].id
+  name     = each.value
+  content  = hcloud_load_balancer.k3s_lb[0].ipv4
+  type     = "A"
+  ttl      = 1
+  proxied  = false
+}
+
+resource "cloudflare_dns_record" "lb_additional_aaaa" {
+  for_each = var.load_balancer_enabled && var.cloudflare_enabled ? toset(var.cloudflare_additional_records) : []
+  zone_id  = data.cloudflare_zone.lb_zone[0].id
+  name     = each.value
+  content  = hcloud_load_balancer.k3s_lb[0].ipv6
+  type     = "AAAA"
+  ttl      = 1
+  proxied  = false
+}

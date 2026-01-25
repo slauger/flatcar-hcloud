@@ -185,6 +185,12 @@ variable "cloudflare_domain" {
   default     = ""
 }
 
+variable "cloudflare_additional_records" {
+  description = "Additional DNS records pointing to load balancer (e.g., ['*.apps', 'api'])"
+  type        = list(string)
+  default     = []
+}
+
 variable "labels" {
   description = "Additional labels to apply"
   type        = map(string)

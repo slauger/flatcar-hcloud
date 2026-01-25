@@ -87,22 +87,43 @@ firewall_ssh_sources = ["YOUR_IP/32"]
 ## Getting kubeconfig
 
 ```bash
-# SSH to server
-ssh core@<server-ip>
+# Get kubeconfig with terraform output (recommended)
+terraform output -raw kubeconfig_command | sh
+export KUBECONFIG=kubeconfig.yaml
+kubectl get nodes
 
-# Get kubeconfig
-sudo cat /etc/rancher/k3s/k3s.yaml > kubeconfig.yaml
+# Or manually with sed
+ssh core@$(terraform output -raw ipv4_address) "sudo cat /etc/rancher/k3s/k3s.yaml" | \
+  sed "s/127.0.0.1/$(terraform output -raw ipv4_address)/" > kubeconfig.yaml
 
-# Copy to local machine
-exit
-scp core@<server-ip>:kubeconfig.yaml ./kubeconfig.yaml
-
-# Update server address in kubeconfig
-sed -i 's/127.0.0.1/<server-ip>/' kubeconfig.yaml
-
-# Test
-kubectl --kubeconfig=kubeconfig.yaml get nodes
+# Or using DNS name (if configured)
+ssh core@$(terraform output -raw server_name) "sudo cat /etc/rancher/k3s/k3s.yaml" | \
+  sed "s/127.0.0.1/$(terraform output -raw server_name)/" > kubeconfig.yaml
 ```
+
+## Wildcard DNS for Applications
+
+Create wildcard DNS records for Ingress/Traefik (like OpenShift's `*.apps.example.com`):
+
+```hcl
+# In terraform.tfvars
+cloudflare_enabled = true
+cloudflare_domain  = "example.com"
+
+# Additional DNS records (all point to the K3s server)
+cloudflare_additional_records = [
+  "*.apps",      # *.apps.example.com -> for application ingress
+  "*.dev",       # *.dev.example.com  -> for dev apps
+  "api"          # api.example.com    -> for API endpoint
+]
+```
+
+This creates:
+- `*.apps.example.com` → K3s server IP (for apps like `myapp.apps.example.com`)
+- `*.dev.example.com` → K3s server IP (for dev deployments)
+- `api.example.com` → K3s server IP (for API access)
+
+Perfect for cert-manager with Let's Encrypt wildcard certificates!
 
 ## Architecture
 

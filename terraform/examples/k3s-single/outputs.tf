@@ -32,3 +32,8 @@ output "ssh_command" {
   description = "SSH command to connect to server"
   value       = "ssh core@${module.server.ipv4_addresses[0]}"
 }
+
+output "kubeconfig_command" {
+  description = "Command to retrieve kubeconfig"
+  value       = "ssh core@${module.server.ipv4_addresses[0]} \"sudo cat /etc/rancher/k3s/k3s.yaml\" | sed 's/127.0.0.1/${module.server.ipv4_addresses[0]}/g' > kubeconfig.yaml"
+}

@@ -62,7 +62,7 @@ variable "firewall_ssh_sources" {
 variable "firewall_allowed_ports" {
   description = "TCP ports to allow through firewall"
   type        = list(number)
-  default     = [80, 443]
+  default     = [80, 443, 6443]  # HTTP, HTTPS, K3s API
 }
 
 # Volume Configuration
@@ -95,6 +95,12 @@ variable "cloudflare_domain" {
   description = "Cloudflare domain for DNS records"
   type        = string
   default     = ""
+}
+
+variable "cloudflare_additional_records" {
+  description = "Additional DNS records to create (e.g., ['*.apps', 'api', '*.dev'])"
+  type        = list(string)
+  default     = []
 }
 
 # Labels

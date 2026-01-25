@@ -97,6 +97,12 @@ variable "cloudflare_domain" {
   default     = ""
 }
 
+variable "cloudflare_additional_records" {
+  description = "Additional DNS records to create (e.g., ['*.apps', 'api', '*.dev'])"
+  type        = list(string)
+  default     = []
+}
+
 # Labels
 variable "labels" {
   description = "Additional labels to apply"

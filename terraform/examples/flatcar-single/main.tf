@@ -40,8 +40,9 @@ module "server" {
   volume_format = var.volume_format
 
   # Cloudflare DNS
-  cloudflare_enabled = var.cloudflare_enabled
-  cloudflare_domain  = var.cloudflare_domain
+  cloudflare_enabled            = var.cloudflare_enabled
+  cloudflare_domain             = var.cloudflare_domain
+  cloudflare_additional_records = var.cloudflare_additional_records
 
   labels = var.labels
 }

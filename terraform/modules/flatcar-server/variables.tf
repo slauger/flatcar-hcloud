@@ -20,6 +20,12 @@ variable "cloudflare_domain" {
   default     = ""
 }
 
+variable "cloudflare_additional_records" {
+  description = "Additional DNS records to create (e.g., ['*.apps', 'api', '*.dev'])"
+  type        = list(string)
+  default     = []
+}
+
 variable "dns_ttl" {
   description = "TTL for DNS records"
   type        = number

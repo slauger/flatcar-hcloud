@@ -81,3 +81,22 @@ resource "hcloud_rdns" "dns-ptr-ipv6" {
   ip_address = element(hcloud_server.server.*.ipv6_address, count.index)
   dns_ptr    = element(hcloud_server.server.*.name, count.index)
 }
+
+# Additional DNS records (e.g., app.example.com, *.apps.example.com)
+resource "cloudflare_dns_record" "additional-a" {
+  for_each = var.cloudflare_enabled && var.public_net ? toset(var.cloudflare_additional_records) : []
+  zone_id  = data.cloudflare_zone.zone[0].id
+  name     = each.value
+  content  = hcloud_server.server[0].ipv4_address
+  type     = "A"
+  ttl      = var.dns_ttl
+}
+
+resource "cloudflare_dns_record" "additional-aaaa" {
+  for_each = var.cloudflare_enabled && var.public_net ? toset(var.cloudflare_additional_records) : []
+  zone_id  = data.cloudflare_zone.zone[0].id
+  name     = each.value
+  content  = hcloud_server.server[0].ipv6_address
+  type     = "AAAA"
+  ttl      = var.dns_ttl
+}
