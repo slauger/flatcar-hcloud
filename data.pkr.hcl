@@ -7,5 +7,5 @@ locals {
   flatcar_version_info = yamldecode(regex_replace(data.http.version.body, "=", ": "))
 
   // dynamically calculate a server type based on arch
-  server_type = var.server_type == "auto" ? (var.arch == "amd64" ? "cx11" : "cax11") : var.server_type
+  server_type = var.server_type == "auto" ? (var.arch == "amd64" ? "cx23" : "cax11") : var.server_type
 }
