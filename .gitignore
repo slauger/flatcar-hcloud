@@ -1,0 +1,63 @@
+# Environment files
+env.sh
+.env.sh
+.env
+*.env
+
+# Packer
+packer_cache/
+*.box
+crash.log
+.packer/
+
+# Terraform
+**/.terraform/
+**/.terraform.lock.hcl
+**/terraform.tfstate
+**/terraform.tfstate.backup
+**/terraform.tfstate.*.backup
+**/.terraform.tfstate.lock.info
+**/*.tfvars
+!**/*.tfvars.example
+**/override.tf
+**/override.tf.json
+**/*_override.tf
+**/*_override.tf.json
+**/.terraformrc
+**/terraform.rc
+
+# Kubeconfig files
+kubeconfig.yaml
+kubeconfig*.yaml
+*.kubeconfig
+
+# SSH keys
+*.pem
+*.key
+id_rsa*
+*.pub
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.*.sw?
+
+# Backup files
+*.bak
+*.backup
+*.tmp
+
+# Logs
+*.log
