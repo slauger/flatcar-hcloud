@@ -83,32 +83,14 @@ variable "backups" {
   default     = false
 }
 
-variable "volume" {
-  description = "Enable or disable an additional volume"
-  type        = bool
-  default     = false
-}
-
-variable "volume_size" {
-  description = "Size of the additional data volume in GB"
-  type        = number
-  default     = 20
-}
-
-variable "volume_format" {
-  description = "Format of the volume (xfs or ext4)"
-  type        = string
-  default     = "ext4"
-  validation {
-    condition     = contains(["xfs", "ext4"], var.volume_format)
-    error_message = "The volume_format variable must be either 'xfs' or 'ext4'."
-  }
-}
-
-variable "volume_mount_path" {
-  description = "Mount path for the volume (configured via ignition)"
-  type        = string
-  default     = "/mnt/data"
+variable "volumes" {
+  description = "List of volumes to attach and mount to the server"
+  type = list(object({
+    name       = string
+    size       = number
+    mount_path = string
+  }))
+  default = []
 }
 
 variable "network_id" {

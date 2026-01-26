@@ -24,13 +24,20 @@ output "ipv6_networks" {
 }
 
 output "volume_ids" {
-  description = "List of volume IDs (if volumes are enabled)"
-  value       = var.volume ? hcloud_volume.volumes[*].id : []
+  description = "Map of volume names to IDs"
+  value       = { for k, v in hcloud_volume.volumes : k => v.id }
 }
 
-output "volume_device_paths" {
-  description = "List of volume device paths (if volumes are enabled)"
-  value       = var.volume ? hcloud_volume.volumes[*].linux_device : []
+output "volume_info" {
+  description = "Map of volume information including names, IDs, and device paths"
+  value = {
+    for k, v in hcloud_volume.volumes : k => {
+      id          = v.id
+      name        = v.name
+      size        = v.size
+      device_path = v.linux_device
+    }
+  }
 }
 
 output "image_id" {

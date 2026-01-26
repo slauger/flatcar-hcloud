@@ -11,6 +11,7 @@ data "ct_config" "k3s_server" {
     install_exec    = var.cluster_init ? "--cluster-init" : "--server https://${var.cluster_init_server}:6443"
     k3s_config      = var.k3s_config
     ssh_public_keys = var.ssh_public_keys
+    volumes         = var.volumes
   })
   strict = var.ct_strict
 }
@@ -41,6 +42,9 @@ module "k3s_servers" {
   firewall_ssh_sources    = var.firewall_ssh_sources
   firewall_allowed_ports  = concat(var.firewall_allowed_ports, [6443]) # Always allow K3s API
   firewall_k3s_api_sources = var.load_balancer_enabled ? [for ip in hcloud_load_balancer.k3s_lb[0].ipv4 : "${ip}/32"] : var.firewall_k3s_api_sources
+
+  # Volumes
+  volumes = var.volumes
 
   # Cloudflare DNS
   cloudflare_enabled = var.cloudflare_enabled

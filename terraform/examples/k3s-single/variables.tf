@@ -66,22 +66,14 @@ variable "firewall_allowed_ports" {
 }
 
 # Volume Configuration
-variable "volume_enabled" {
-  description = "Enable additional volume"
-  type        = bool
-  default     = false
-}
-
-variable "volume_size" {
-  description = "Size of volume in GB"
-  type        = number
-  default     = 20
-}
-
-variable "volume_format" {
-  description = "Filesystem format (xfs or ext4)"
-  type        = string
-  default     = "ext4"
+variable "volumes" {
+  description = "List of volumes to attach and mount (device names are assigned as /dev/sdb, /dev/sdc, etc. in order)"
+  type = list(object({
+    name       = string
+    size       = number
+    mount_path = string
+  }))
+  default = []
 }
 
 # Cloudflare DNS

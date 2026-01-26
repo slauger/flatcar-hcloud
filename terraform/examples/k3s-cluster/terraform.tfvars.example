@@ -43,6 +43,19 @@ load_balancer_dns_name       = "k3s"  # Will be k3s.example.com
 # cloudflare_enabled = true
 # cloudflare_domain  = "example.com"
 
+# Volumes (optional but recommended for production)
+# K3s stores everything under /var/lib/rancher/k3s/:
+# - Container images: /var/lib/rancher/k3s/agent/containerd/
+# - PersistentVolumes: /var/lib/rancher/k3s/storage/
+# - Etcd/DB data: /var/lib/rancher/k3s/data/
+# volumes = [
+#   {
+#     name       = "k3s-data"
+#     size       = 200
+#     mount_path = "/var/lib/rancher"
+#   }
+# ]
+
 # Labels
 labels = {
   environment = "production"

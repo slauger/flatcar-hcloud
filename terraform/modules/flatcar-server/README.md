@@ -7,7 +7,7 @@ Terraform module for deploying Flatcar Container Linux servers on Hetzner Cloud.
 - Automatic Flatcar image selection (amd64/arm64)
 - Integrated firewall with configurable rules
 - Optional Cloudflare DNS integration
-- Optional volume attachment
+- Multiple volume support with automatic mounting
 - Private network support
 - Multiple instance deployment
 
@@ -49,22 +49,33 @@ module "webserver" {
 }
 ```
 
-### With Volume
+### With Volumes
 
 ```hcl
-module "webserver" {
+module "k3s_server" {
   source = "./modules/flatcar-server"
 
-  name       = "web"
+  name       = "k3s"
   dns_domain = "example.com"
+
+  ignition_config = data.ct_config.k3s.rendered
 
   # ... other config ...
 
-  volume        = true
-  volume_size   = 50
-  volume_format = "ext4"
+  # Single volume for all K3s data (recommended)
+  volumes = [
+    {
+      name       = "k3s-data"
+      size       = 200
+      mount_path = "/var/lib/rancher"
+    }
+  ]
 }
 ```
+
+**Note:** Volumes are automatically formatted with XFS and mounted via Ignition. Device names are assigned as `/dev/sdb`, `/dev/sdc`, etc. in the order specified. Your Butane/Ignition config must include the volume mount configuration - see the [k3s-single example](../../examples/k3s-single/config.yaml) for reference.
+
+**For K3s workloads:** Mount a single volume at `/var/lib/rancher` which contains all K3s data (container images, PVCs, etcd).
 
 ### Multiple Instances
 

@@ -23,9 +23,14 @@ output "firewall_id" {
   value       = module.server.firewall_id
 }
 
-output "volume_id" {
-  description = "Volume ID (if enabled)"
-  value       = length(module.server.volume_ids) > 0 ? module.server.volume_ids[0] : null
+output "volume_ids" {
+  description = "Map of volume names to IDs"
+  value       = module.server.volume_ids
+}
+
+output "volume_info" {
+  description = "Detailed volume information"
+  value       = module.server.volume_info
 }
 
 output "ssh_command" {
@@ -35,5 +40,5 @@ output "ssh_command" {
 
 output "kubeconfig_command" {
   description = "Command to retrieve kubeconfig"
-  value       = "ssh core@${module.server.ipv4_addresses[0]} \"sudo cat /etc/rancher/k3s/k3s.yaml\" | sed 's/127.0.0.1/${module.server.ipv4_addresses[0]}/g' > kubeconfig.yaml"
+  value       = "ssh core@${module.server.ipv4_addresses[0]} \"sudo cat /etc/rancher/k3s/k3s.yaml\" | sed -e 's/127.0.0.1/${module.server.ipv4_addresses[0]}/g' -e 's/default/${var.name}/g' > kubeconfig.yaml"
 }

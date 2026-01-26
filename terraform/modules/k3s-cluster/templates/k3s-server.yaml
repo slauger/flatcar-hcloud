@@ -14,6 +14,18 @@ passwd:
 %{ endfor ~}
 
 storage:
+%{ if length(volumes) > 0 ~}
+  filesystems:
+%{ for idx, vol in volumes ~}
+    - device: /dev/sd${substr("bcdefghijklmnopqrstuvwxyz", idx, 1)}
+      path: ${vol.mount_path}
+      format: xfs
+      label: ${vol.name}
+      wipe_filesystem: false
+      with_mount_unit: true
+%{ endfor ~}
+%{ endif ~}
+
   files:
     - path: /etc/hostname
       mode: 0644

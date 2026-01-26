@@ -8,7 +8,8 @@ Deployment of a single K3s server on Flatcar Container Linux with integrated fir
 - Automatic K3s installation on first boot
 - Daily K3s updates via systemd timer
 - Firewall with K3s API (6443), HTTP/HTTPS
-- Optional Cloudflare DNS
+- Optional Cloudflare DNS with wildcard support
+- Optional volume support for container images and K3s data
 - SSH access control
 
 ## Quick Start
@@ -68,6 +69,16 @@ firewall_allowed_ports = [80, 443, 6443]  # HTTP, HTTPS, K3s API
 
 # Restrict SSH to your IP (recommended)
 # firewall_ssh_sources = ["1.2.3.4/32"]
+
+# Volumes (optional but recommended for production)
+# K3s stores everything under /var/lib/rancher/k3s/
+volumes = [
+  {
+    name       = "k3s-data"
+    size       = 200
+    mount_path = "/var/lib/rancher"
+  }
+]
 ```
 
 ## Firewall Rules
@@ -92,14 +103,45 @@ terraform output -raw kubeconfig_command | sh
 export KUBECONFIG=kubeconfig.yaml
 kubectl get nodes
 
-# Or manually with sed
+# Or manually with sed (replaces server IP and context name)
 ssh core@$(terraform output -raw ipv4_address) "sudo cat /etc/rancher/k3s/k3s.yaml" | \
-  sed "s/127.0.0.1/$(terraform output -raw ipv4_address)/" > kubeconfig.yaml
+  sed -e "s/127.0.0.1/$(terraform output -raw ipv4_address)/g" \
+      -e "s/default/$(terraform output -raw server_name | cut -d. -f1)/g" > kubeconfig.yaml
 
 # Or using DNS name (if configured)
 ssh core@$(terraform output -raw server_name) "sudo cat /etc/rancher/k3s/k3s.yaml" | \
-  sed "s/127.0.0.1/$(terraform output -raw server_name)/" > kubeconfig.yaml
+  sed -e "s/127.0.0.1/$(terraform output -raw server_name)/g" \
+      -e "s/default/$(terraform output -raw server_name | cut -d. -f1)/g" > kubeconfig.yaml
 ```
+
+## Storage Volumes
+
+For production use, it's recommended to use a separate volume for K3s data to prevent the root partition from filling up:
+
+```hcl
+volumes = [
+  {
+    name       = "k3s-data"
+    size       = 200  # GB - adjust based on workload
+    mount_path = "/var/lib/rancher"
+  }
+]
+```
+
+**What's stored in `/var/lib/rancher/k3s/`:**
+- **Container Images**: `/var/lib/rancher/k3s/agent/containerd/` - All pulled container images
+- **PersistentVolumes**: `/var/lib/rancher/k3s/storage/` - local-path-provisioner data
+- **Etcd/Database**: `/var/lib/rancher/k3s/data/` - Cluster state
+
+**Benefits:**
+- Prevents root partition from filling up with container images and PVCs
+- Easy to resize volume independently
+- Better performance with XFS filesystem
+- Single volume simplifies management
+
+**Device Naming:** Volume is attached as `/dev/sdb` and automatically formatted with XFS and mounted via Ignition on first boot.
+
+**Cost:** Volume costs ~€0.047/GB/month at Hetzner (200GB = ~€9.40/month).
 
 ## Wildcard DNS for Applications
 

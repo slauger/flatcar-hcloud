@@ -191,6 +191,16 @@ variable "cloudflare_additional_records" {
   default     = []
 }
 
+variable "volumes" {
+  description = "List of volumes to attach and mount to each server (device names are assigned as /dev/sdb, /dev/sdc, etc. in order)"
+  type = list(object({
+    name       = string
+    size       = number
+    mount_path = string
+  }))
+  default = []
+}
+
 variable "labels" {
   description = "Additional labels to apply"
   type        = map(string)

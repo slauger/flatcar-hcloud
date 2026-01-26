@@ -23,9 +23,14 @@ output "firewall_id" {
   value       = module.server.firewall_id
 }
 
-output "volume_id" {
-  description = "Volume ID (if enabled)"
-  value       = length(module.server.volume_ids) > 0 ? module.server.volume_ids[0] : null
+output "volume_ids" {
+  description = "Map of volume names to IDs"
+  value       = module.server.volume_ids
+}
+
+output "volume_info" {
+  description = "Detailed volume information"
+  value       = module.server.volume_info
 }
 
 output "ssh_command" {

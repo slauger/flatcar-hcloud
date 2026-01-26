@@ -1,17 +1,35 @@
+# Create a map of volumes per server instance
+locals {
+  volume_map = merge([
+    for idx in range(var.instance_count) : {
+      for vol in var.volumes :
+      "${hcloud_server.server[idx].name}-${vol.name}" => {
+        server_index = idx
+        server_id    = hcloud_server.server[idx].id
+        server_name  = hcloud_server.server[idx].name
+        name         = vol.name
+        size         = vol.size
+        mount_path   = vol.mount_path
+      }
+    }
+  ]...)
+}
+
 resource "hcloud_volume" "volumes" {
-  count     = var.volume ? var.instance_count : 0
-  name      = "${element(hcloud_server.server[*].name, count.index)}-data"
-  size      = var.volume_size
-  format    = var.volume_format
+  for_each  = local.volume_map
+  name      = each.key
+  size      = each.value.size
+  format    = "xfs"
   automount = false
-  server_id = element(hcloud_server.server[*].id, count.index)
-  location  = var.location
+  server_id = each.value.server_id
+  # Location is inherited from server when server_id is set
 
   labels = merge(
     var.labels,
     {
       managed_by = "terraform"
-      server     = element(hcloud_server.server[*].name, count.index)
+      server     = each.value.server_name
+      volume     = each.value.name
     }
   )
 }

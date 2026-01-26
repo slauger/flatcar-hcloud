@@ -34,6 +34,9 @@ module "k3s_cluster" {
   load_balancer_expose_k3s_api = var.load_balancer_expose_k3s_api
   load_balancer_dns_name       = var.load_balancer_dns_name
 
+  # Volumes
+  volumes = var.volumes
+
   # Cloudflare DNS
   cloudflare_enabled = var.cloudflare_enabled
   cloudflare_domain  = var.cloudflare_domain
