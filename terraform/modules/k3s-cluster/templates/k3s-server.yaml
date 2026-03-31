@@ -78,6 +78,7 @@ systemd:
         Type=oneshot
         TimeoutStartSec=300
         Environment="INSTALL_K3S_CHANNEL=stable"
+        Environment="INSTALL_K3S_SKIP_SELINUX_RPM=true"
         ExecStart=/bin/sh -c "curl -sfL https://get.k3s.io | sh -"
 
     - name: k3s-updater.timer
