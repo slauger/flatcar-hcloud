@@ -39,6 +39,19 @@ storage:
           write-kubeconfig-mode: "0644"
           ${k3s_config}
 
+    # kubelet image garbage collection (k3s >= v1.32 merges kubelet.conf.d over its
+    # defaults): start at 70 % disk usage, clean up to 50 %, and remove images unused
+    # for 7 days regardless of disk usage (kubelet default: 85/80 %, never by age).
+    - path: /var/lib/rancher/k3s/agent/etc/kubelet.conf.d/50-image-gc.conf
+      mode: 0600
+      contents:
+        inline: |
+          apiVersion: kubelet.config.k8s.io/v1beta1
+          kind: KubeletConfiguration
+          imageGCHighThresholdPercent: 70
+          imageGCLowThresholdPercent: 50
+          imageMaximumGCAge: 168h
+
 systemd:
   units:
     # Disable Docker and Containerd (K3s brings its own)
