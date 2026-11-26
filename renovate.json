@@ -3,12 +3,35 @@
   "extends": [
     "config:recommended",
     ":semanticCommits",
-    ":semanticCommitTypeAll(chore)"
+    ":semanticCommitTypeAll(chore)",
+    "helpers:pinGitHubActionDigests"
   ],
+  "ignorePaths": [],
+  "minimumReleaseAge": "3 days",
   "automerge": true,
   "automergeType": "pr",
   "automergeStrategy": "squash",
   "platformAutomerge": false,
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Packer plugins annotated with a renovate comment",
+      "managerFilePatterns": ["/(^|/)[^/]+\\.pkr\\.hcl$/"],
+      "matchStrings": [
+        "#[ \\t]+renovate:[ \\t]+datasource=(?<datasource>\\S+)[ \\t]+depName=(?<depName>\\S+)\\s+version[ \\t]+=[ \\t]+\"(?<currentValue>[^\"]+)\""
+      ],
+      "versioningTemplate": "hashicorp",
+      "extractVersionTemplate": "^v?(?<version>.*)$"
+    },
+    {
+      "customType": "regex",
+      "description": "Tool versions in workflows annotated with a renovate comment",
+      "managerFilePatterns": ["/(^|/)\\.github/workflows/[^/]+\\.ya?ml$/"],
+      "matchStrings": [
+        "#[ \\t]+renovate:[ \\t]+datasource=(?<datasource>\\S+)[ \\t]+depName=(?<depName>\\S+)([ \\t]+extractVersion=(?<extractVersion>\\S+))?\\s*\\n[ \\t]*[A-Za-z_]+:[ \\t]*\"?(?<currentValue>[^\"\\s]+)\"?"
+      ]
+    }
+  ],
   "packageRules": [
     {
       "matchManagers": ["github-actions"],
@@ -17,6 +40,11 @@
     {
       "matchDatasources": ["pypi"],
       "groupName": "python dependencies"
+    },
+    {
+      "description": "Majors need a manual review: no live environment in CI",
+      "matchUpdateTypes": ["major"],
+      "automerge": false
     }
   ]
 }
