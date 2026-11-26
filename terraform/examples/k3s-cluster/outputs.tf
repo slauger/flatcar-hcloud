@@ -46,7 +46,7 @@ output "kubeconfig_command" {
 
 output "connection_info" {
   description = "Connection information"
-  value = <<-EOT
+  value       = <<-EOT
 
     K3s Cluster deployed successfully!
 
