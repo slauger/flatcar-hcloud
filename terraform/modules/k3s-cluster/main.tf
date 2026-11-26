@@ -37,10 +37,10 @@ module "k3s_servers" {
   public_net = var.public_net
 
   # Firewall configuration
-  firewall_enabled        = var.firewall_enabled
-  firewall_allow_ssh      = var.firewall_allow_ssh
-  firewall_ssh_sources    = var.firewall_ssh_sources
-  firewall_allowed_ports  = concat(var.firewall_allowed_ports, [6443]) # Always allow K3s API
+  firewall_enabled         = var.firewall_enabled
+  firewall_allow_ssh       = var.firewall_allow_ssh
+  firewall_ssh_sources     = var.firewall_ssh_sources
+  firewall_allowed_ports   = concat(var.firewall_allowed_ports, [6443]) # Always allow K3s API
   firewall_k3s_api_sources = var.load_balancer_enabled ? [for ip in hcloud_load_balancer.k3s_lb[0].ipv4 : "${ip}/32"] : var.firewall_k3s_api_sources
 
   # Volumes

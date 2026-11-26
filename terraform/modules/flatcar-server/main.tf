@@ -1,6 +1,6 @@
 data "hcloud_image" "flatcar" {
-  with_selector     = "os=flatcar,arch=${var.arch}"
-  most_recent       = true
+  with_selector = "os=flatcar,arch=${var.arch}"
+  most_recent   = true
 }
 
 resource "hcloud_server" "server" {

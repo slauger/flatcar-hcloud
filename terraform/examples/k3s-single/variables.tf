@@ -62,7 +62,7 @@ variable "firewall_ssh_sources" {
 variable "firewall_allowed_ports" {
   description = "TCP ports to allow through firewall"
   type        = list(number)
-  default     = [80, 443, 6443]  # HTTP, HTTPS, K3s API
+  default     = [80, 443, 6443] # HTTP, HTTPS, K3s API
 }
 
 # Volume Configuration
