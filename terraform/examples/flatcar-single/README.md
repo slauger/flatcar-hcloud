@@ -81,21 +81,16 @@ firewall_ssh_sources = ["YOUR_IP/32"]
 
 ## Optional: Volume
 
-Enable an additional volume:
+Attach additional volumes. Each volume is formatted as XFS and mounted via Ignition (device names are assigned as `/dev/sdb`, `/dev/sdc`, ... in list order):
 
 ```hcl
-volume_enabled = true
-volume_size    = 50
-volume_format  = "ext4"
-```
-
-Configure mounting in `config.yaml`:
-```yaml
-storage:
-  filesystems:
-    - device: /dev/sdb
-      format: ext4
-      path: /mnt/data
+volumes = [
+  {
+    name       = "data"
+    size       = 50
+    mount_path = "/var/mnt/data"
+  }
+]
 ```
 
 ## Architecture

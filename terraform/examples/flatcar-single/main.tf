@@ -10,6 +10,7 @@ data "hcloud_ssh_keys" "keys" {
 data "ct_config" "server" {
   content = templatefile("${path.module}/config.yaml", {
     ssh_public_keys = [for key in data.hcloud_ssh_keys.keys.ssh_keys : key.public_key]
+    volumes         = var.volumes
   })
   strict = true
 }
@@ -34,10 +35,8 @@ module "server" {
   firewall_ssh_sources   = var.firewall_ssh_sources
   firewall_allowed_ports = var.firewall_allowed_ports
 
-  # Optional: Volume
-  volume        = var.volume_enabled
-  volume_size   = var.volume_size
-  volume_format = var.volume_format
+  # Volumes
+  volumes = var.volumes
 
   # Cloudflare DNS
   cloudflare_enabled            = var.cloudflare_enabled

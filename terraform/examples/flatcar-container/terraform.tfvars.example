@@ -23,9 +23,14 @@ firewall_allowed_ports = [80, 443]
 # For better security, restrict SSH to your IP:
 # firewall_ssh_sources = ["YOUR_IP/32"]
 
-# Optional: Enable volume
-# volume_enabled = true
-# volume_size    = 50
+# Optional: Volumes (formatted as XFS and mounted via Ignition)
+# volumes = [
+#   {
+#     name       = "data"
+#     size       = 50
+#     mount_path = "/var/mnt/data"
+#   }
+# ]
 
 # Optional: Enable Cloudflare DNS
 # cloudflare_enabled = true
