@@ -194,8 +194,8 @@ cloudflare_domain  = "example.com"
 |----------|---------|
 | terraform | >= 1.0 |
 | hcloud | ~> 1.45 |
-| cloudflare | ~> 4.0 (optional) |
-| ct | ~> 0.13 |
+| cloudflare | ~> 5.0 (optional) |
+| ct | ~> 0.14 |
 | random | ~> 3.6 |
 
 ## Environment Variables

@@ -1,5 +1,8 @@
 # Flatcar Container Linux on Hetzner Cloud
 
+[![CI](https://github.com/slauger/flatcar-hcloud/actions/workflows/ci.yaml/badge.svg)](https://github.com/slauger/flatcar-hcloud/actions/workflows/ci.yaml)
+[![License](https://img.shields.io/github/license/slauger/flatcar-hcloud)](LICENSE)
+
 Build Flatcar Container Linux images on Hetzner Cloud with Packer.
 
 ## Overview
@@ -37,12 +40,15 @@ The built images will have these labels:
 ├── variables.pkr.hcl        # Packer variables
 ├── versions.pkr.hcl         # Packer provider requirements
 ├── grub.cfg                 # GRUB config with Hetzner userdata
-├── examples/                # Container Linux Config examples
+├── examples/                # Butane config examples
 │   ├── basic.yaml
+│   ├── docker-compose.yaml
+│   ├── docker-container.yaml
 │   ├── k3s.yaml
 │   └── k3s-internal.yaml
-└── terraform/               # Terraform modules for deployment
-    └── README.md           # See Terraform documentation
+├── terraform/               # Terraform modules for deployment
+│   └── README.md            # See Terraform documentation
+└── tests/butane/            # Offline render test for all Butane configs
 ```
 
 ## Requirements
@@ -149,6 +155,16 @@ terraform init && terraform apply
 4. **Snapshot**: Creates a Hetzner Cloud snapshot with proper labels
 
 The GRUB config configures Ignition to read from `http://169.254.169.254/hetzner/v1/userdata`, allowing you to pass Ignition configs via Hetzner Cloud user data.
+
+## Testing
+
+CI runs `terraform fmt`, `tflint`, `terraform validate` for every module and example, `packer validate` and an offline render of all Butane configs. To render the Butane configs locally (no cloud credentials needed):
+
+```bash
+cd tests/butane
+terraform init
+terraform plan
+```
 
 ## Environment Variables
 

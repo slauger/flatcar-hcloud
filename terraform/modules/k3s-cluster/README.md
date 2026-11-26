@@ -129,51 +129,56 @@ sed -i "s|https://.*:6443|https://${LB_IP}:6443|" kubeconfig.yaml
 kubectl --kubeconfig=kubeconfig.yaml get nodes
 ```
 
+<!-- BEGIN_TF_DOCS -->
 ## Requirements
 
 | Name | Version |
-|------|---------|
+| ---- | ------- |
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.0 |
-| <a name="requirement_ct"></a> [ct](#requirement\_ct) | ~> 0.13 |
+| <a name="requirement_cloudflare"></a> [cloudflare](#requirement\_cloudflare) | ~> 5.0 |
+| <a name="requirement_ct"></a> [ct](#requirement\_ct) | ~> 0.14 |
 | <a name="requirement_hcloud"></a> [hcloud](#requirement\_hcloud) | ~> 1.45 |
 | <a name="requirement_random"></a> [random](#requirement\_random) | ~> 3.6 |
 
 ## Providers
 
 | Name | Version |
-|------|---------|
-| <a name="provider_cloudflare"></a> [cloudflare](#provider\_cloudflare) | n/a |
-| <a name="provider_ct"></a> [ct](#provider\_ct) | ~> 0.13 |
+| ---- | ------- |
+| <a name="provider_cloudflare"></a> [cloudflare](#provider\_cloudflare) | ~> 5.0 |
+| <a name="provider_ct"></a> [ct](#provider\_ct) | ~> 0.14 |
 | <a name="provider_hcloud"></a> [hcloud](#provider\_hcloud) | ~> 1.45 |
 | <a name="provider_random"></a> [random](#provider\_random) | ~> 3.6 |
 
 ## Modules
 
 | Name | Source | Version |
-|------|--------|---------|
+| ---- | ------ | ------- |
 | <a name="module_k3s_servers"></a> [k3s\_servers](#module\_k3s\_servers) | ../flatcar-server | n/a |
 
 ## Resources
 
 | Name | Type |
-|------|------|
-| [cloudflare_dns_record.lb_a](https://registry.terraform.io/providers/hashicorp/cloudflare/latest/docs/resources/dns_record) | resource |
-| [cloudflare_dns_record.lb_aaaa](https://registry.terraform.io/providers/hashicorp/cloudflare/latest/docs/resources/dns_record) | resource |
+| ---- | ---- |
+| [cloudflare_dns_record.lb_a](https://registry.terraform.io/providers/cloudflare/cloudflare/latest/docs/resources/dns_record) | resource |
+| [cloudflare_dns_record.lb_aaaa](https://registry.terraform.io/providers/cloudflare/cloudflare/latest/docs/resources/dns_record) | resource |
+| [cloudflare_dns_record.lb_additional_a](https://registry.terraform.io/providers/cloudflare/cloudflare/latest/docs/resources/dns_record) | resource |
+| [cloudflare_dns_record.lb_additional_aaaa](https://registry.terraform.io/providers/cloudflare/cloudflare/latest/docs/resources/dns_record) | resource |
 | [hcloud_load_balancer.k3s_lb](https://registry.terraform.io/providers/hetznercloud/hcloud/latest/docs/resources/load_balancer) | resource |
 | [hcloud_load_balancer_service.http](https://registry.terraform.io/providers/hetznercloud/hcloud/latest/docs/resources/load_balancer_service) | resource |
 | [hcloud_load_balancer_service.https](https://registry.terraform.io/providers/hetznercloud/hcloud/latest/docs/resources/load_balancer_service) | resource |
 | [hcloud_load_balancer_service.k3s_api](https://registry.terraform.io/providers/hetznercloud/hcloud/latest/docs/resources/load_balancer_service) | resource |
 | [hcloud_load_balancer_target.k3s_servers](https://registry.terraform.io/providers/hetznercloud/hcloud/latest/docs/resources/load_balancer_target) | resource |
 | [random_password.k3s_token](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password) | resource |
-| [cloudflare_zone.lb_zone](https://registry.terraform.io/providers/hashicorp/cloudflare/latest/docs/data-sources/zone) | data source |
+| [cloudflare_zone.lb_zone](https://registry.terraform.io/providers/cloudflare/cloudflare/latest/docs/data-sources/zone) | data source |
 | [ct_config.k3s_server](https://registry.terraform.io/providers/poseidon/ct/latest/docs/data-sources/config) | data source |
 
 ## Inputs
 
 | Name | Description | Type | Default | Required |
-|------|-------------|------|---------|:--------:|
+| ---- | ----------- | ---- | ------- | :------: |
 | <a name="input_arch"></a> [arch](#input\_arch) | CPU architecture (amd64 or arm64) | `string` | `"amd64"` | no |
 | <a name="input_backups"></a> [backups](#input\_backups) | Enable backups | `bool` | `false` | no |
+| <a name="input_cloudflare_additional_records"></a> [cloudflare\_additional\_records](#input\_cloudflare\_additional\_records) | Additional DNS records pointing to load balancer (e.g., ['*.apps', 'api']) | `list(string)` | `[]` | no |
 | <a name="input_cloudflare_domain"></a> [cloudflare\_domain](#input\_cloudflare\_domain) | Cloudflare domain for DNS records | `string` | `""` | no |
 | <a name="input_cloudflare_enabled"></a> [cloudflare\_enabled](#input\_cloudflare\_enabled) | Enable Cloudflare DNS integration | `bool` | `false` | no |
 | <a name="input_cluster_init"></a> [cluster\_init](#input\_cluster\_init) | Initialize a new cluster (first server only) | `bool` | `true` | no |
@@ -202,11 +207,12 @@ kubectl --kubeconfig=kubeconfig.yaml get nodes
 | <a name="input_server_type"></a> [server\_type](#input\_server\_type) | Hetzner Cloud instance type for servers | `string` | `"cx32"` | no |
 | <a name="input_ssh_keys"></a> [ssh\_keys](#input\_ssh\_keys) | SSH key IDs or names to inject | `list(string)` | `[]` | no |
 | <a name="input_ssh_public_keys"></a> [ssh\_public\_keys](#input\_ssh\_public\_keys) | SSH public keys to add to Ignition config | `list(string)` | n/a | yes |
+| <a name="input_volumes"></a> [volumes](#input\_volumes) | List of volumes to attach and mount to each server (device names are assigned as /dev/sdb, /dev/sdc, etc. in order) | <pre>list(object({<br/>    name       = string<br/>    size       = number<br/>    mount_path = string<br/>  }))</pre> | `[]` | no |
 
 ## Outputs
 
 | Name | Description |
-|------|-------------|
+| ---- | ----------- |
 | <a name="output_firewall_id"></a> [firewall\_id](#output\_firewall\_id) | Firewall ID (if enabled) |
 | <a name="output_k3s_token"></a> [k3s\_token](#output\_k3s\_token) | K3s cluster token (sensitive) |
 | <a name="output_kubeconfig_command"></a> [kubeconfig\_command](#output\_kubeconfig\_command) | Command to retrieve kubeconfig from first server |
@@ -218,3 +224,4 @@ kubectl --kubeconfig=kubeconfig.yaml get nodes
 | <a name="output_server_ipv4_addresses"></a> [server\_ipv4\_addresses](#output\_server\_ipv4\_addresses) | List of K3s server IPv4 addresses |
 | <a name="output_server_ipv6_addresses"></a> [server\_ipv6\_addresses](#output\_server\_ipv6\_addresses) | List of K3s server IPv6 addresses |
 | <a name="output_server_names"></a> [server\_names](#output\_server\_names) | List of K3s server FQDNs |
+<!-- END_TF_DOCS -->
