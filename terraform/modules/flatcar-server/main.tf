@@ -53,8 +53,8 @@ data "cloudflare_zone" "zone" {
 resource "cloudflare_dns_record" "dns-a" {
   count   = var.cloudflare_enabled && var.public_net ? var.instance_count : 0
   zone_id = data.cloudflare_zone.zone[0].id
-  name    = element(hcloud_server.server.*.name, count.index)
-  content = element(hcloud_server.server.*.ipv4_address, count.index)
+  name    = element(hcloud_server.server[*].name, count.index)
+  content = element(hcloud_server.server[*].ipv4_address, count.index)
   type    = "A"
   ttl     = var.dns_ttl
 }
@@ -62,24 +62,24 @@ resource "cloudflare_dns_record" "dns-a" {
 resource "cloudflare_dns_record" "dns-aaaa" {
   count   = var.cloudflare_enabled && var.public_net ? var.instance_count : 0
   zone_id = data.cloudflare_zone.zone[0].id
-  name    = element(hcloud_server.server.*.name, count.index)
-  content = element(hcloud_server.server.*.ipv6_address, count.index)
+  name    = element(hcloud_server.server[*].name, count.index)
+  content = element(hcloud_server.server[*].ipv6_address, count.index)
   type    = "AAAA"
   ttl     = var.dns_ttl
 }
 
 resource "hcloud_rdns" "dns-ptr-ipv4" {
   count      = var.public_net ? var.instance_count : 0
-  server_id  = element(hcloud_server.server.*.id, count.index)
-  ip_address = element(hcloud_server.server.*.ipv4_address, count.index)
-  dns_ptr    = element(hcloud_server.server.*.name, count.index)
+  server_id  = element(hcloud_server.server[*].id, count.index)
+  ip_address = element(hcloud_server.server[*].ipv4_address, count.index)
+  dns_ptr    = element(hcloud_server.server[*].name, count.index)
 }
 
 resource "hcloud_rdns" "dns-ptr-ipv6" {
   count      = var.public_net ? var.instance_count : 0
-  server_id  = element(hcloud_server.server.*.id, count.index)
-  ip_address = element(hcloud_server.server.*.ipv6_address, count.index)
-  dns_ptr    = element(hcloud_server.server.*.name, count.index)
+  server_id  = element(hcloud_server.server[*].id, count.index)
+  ip_address = element(hcloud_server.server[*].ipv6_address, count.index)
+  dns_ptr    = element(hcloud_server.server[*].name, count.index)
 }
 
 # Additional DNS records (e.g., app.example.com, *.apps.example.com)
